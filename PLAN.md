@@ -10,33 +10,64 @@ Lithuanian speech corpora.
 
 ### Current / queued work
 
-**In progress:** Alpha sweep on 500 "hard" test clips (where baseline
-greedy had 10-80% WER). Using the fine-tuned `best.nemo` +
-`lt_token_4gram.arpa`, beam_size=4, on GPU.
+**Newest findings (2026-04-11, second round of evals):**
 
-Partial results so far:
+1. **Alpha sweep** on 500 "hard" test clips (where baseline greedy
+   had 10-80% WER), using `best.nemo` + `lt_token_4gram.arpa`,
+   beam_size=4, on GPU:
 
-| alpha | WER | CER | vs 0.0 |
-|-------|-----|-----|--------|
-| 0.0 (no LM) | 21.58% | 4.04% | — |
-| 0.1 | 19.34% | 3.74% | -2.24 |
-| 0.2 | 18.12% | 3.50% | -3.46 |
-| 0.3 | 17.07% | 3.48% | -4.51 |
-| 0.4 | 16.52% | 3.44% | -5.06 |
-| 0.5 | ... | ... | running |
+   | alpha | WER | CER |
+   |-------|-----|-----|
+   | 0.0 (no LM) | 21.58% | 4.04% |
+   | 0.1 | 19.34% | 3.74% |
+   | 0.2 | 18.12% | 3.50% |
+   | 0.3 | 17.07% | 3.48% |
+   | 0.4 | 16.52% | 3.44% |
+   | **0.5** | **16.38%** | 3.53% |
+   | 0.6 | 16.44% | 3.61% |
+   | 0.7 | 16.52% | 3.70% |
+   | 0.8 | 16.63% | 3.72% |
 
-Best alpha so far: **0.4** on hard clips. The 0.3 we used for the
-11.23% result on the full test may have been sub-optimal — 0.4 might
-give a small additional win.
+   Peak WER at **α=0.5** on hard CV25 clips. Best CER at α=0.4.
+
+2. **Full test reruns at α=0.5** (epoch 0 "best.nemo" checkpoint):
+   - CV25 LT test (5,644 clips): **11.04% WER, 2.70% CER**
+     (was 11.23% / 2.61% at α=0.3 — -0.19pp WER)
+   - FLEURS LT test (986 clips): 17.54% WER, 5.48% CER
+     (worse than α=0.3's 17.33% / 5.10% — FLEURS is a different
+     domain so the LM helps less)
+
+3. **Alpha is dataset-dependent.** CV25 → α=0.5, FLEURS → α=0.3.
+   Our LM is biased toward CV25+Wikipedia text; higher alpha
+   over-corrects on out-of-domain audio.
+
+4. **Epoch sweep on full CV25 test (greedy, all 5 checkpoints):**
+
+   | Epoch | WER | CER |
+   |-------|-----|-----|
+   | 0 (previously "best") | 14.06% | 2.90% |
+   | 1 | 13.86% | 2.82% |
+   | 2 | 13.76% | 2.80% |
+   | 3 | 13.77% | 2.80% |
+   | **4** | **13.68%** | **2.78%** |
+
+   **Later epochs were better, not worse.** The flat lr=1e-6
+   schedule didn't overfit — the 200-clip "easy" subset used for
+   per-epoch validation was too small and misleading. The true best
+   checkpoint on the full test set is epoch 4.
+
+   **Action taken:** `epoch04.nemo` uploaded to HuggingFace replacing
+   `parakeet-tdt-lt.nemo`. Users pulling from
+   `sliderforthewin/parakeet-tdt-lt` now get the epoch 4 checkpoint.
 
 **Queued next:**
-1. Finish alpha 0.5 result — stop if WER goes back up
-2. Beam size sweep at best alpha: beam ∈ {4, 8, 16}
-3. Re-eval best alpha+beam on full CV25 LT test + FLEURS LT test
-4. Retrain with cosine LR schedule (lr=5e-6 → 5e-8 over 10 epochs) —
-   current run found epoch 0 best because flat lr=1e-6 overfit on
-   later epochs. Cosine schedule likely extracts more.
-5. Document, commit, push after each step.
+- Beam size sweep at α=0.5: beam ∈ {4, 8, 16}
+- Retrain with cosine LR schedule (lr=5e-6 → 5e-8 over 10 epochs),
+  now that we know later epochs are actually still improving under
+  the flat schedule
+- Run full speechbench eval on GCP once the user is back
+- Compute the stacked "epoch 4 + beam + LM α=0.5" number and
+  update the HF model card
 
 ### What's known good (committed and reproducible)
 

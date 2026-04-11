@@ -1,0 +1,10 @@
+{
+  "model": "/home/jasontitus/finetuneparakeet/checkpoints/lt-ft-wsl/epoch03.nemo",
+  "manifest": "/home/jasontitus/finetuneparakeet/data/manifests/cv25_lt_test.json",
+  "n_clips": 5644,
+  "audio_seconds": 29441.93599999994,
+  "wall_seconds": 59.06332969665527,
+  "rtfx": 498.48080274531526,
+  "wer": 0.13765490443184206,
+  "cer": 0.027982920960765496
+}

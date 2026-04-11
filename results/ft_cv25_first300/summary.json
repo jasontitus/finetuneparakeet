@@ -1,0 +1,10 @@
+{
+  "model": "/home/jasontitus/finetuneparakeet/checkpoints/lt-ft-wsl/best.nemo",
+  "manifest": "/home/jasontitus/finetuneparakeet/data/manifests/cv25_lt_test_first300.json",
+  "n_clips": 300,
+  "audio_seconds": 1719.7399999999986,
+  "wall_seconds": 4.400223970413208,
+  "rtfx": 390.83010582265985,
+  "wer": 0.16044061302681992,
+  "cer": 0.03656982670744138
+}
