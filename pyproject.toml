@@ -1,0 +1,18 @@
+[project]
+name = "finetuneparakeet"
+version = "0.1.0"
+description = "Fine-tune NVIDIA parakeet-tdt-0.6b-v3 on Lithuanian ASR."
+requires-python = ">=3.11,<3.13"
+readme = "PLAN.md"
+
+# The real dependency set lives in requirements.txt so we can pin
+# the transitively-fragile ML stack without fighting PEP 517 frontends.
+# `uv pip install -r requirements.txt` is the install step.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["finetune"]
+package-dir = {"" = "src"}

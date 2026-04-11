@@ -1,0 +1,86 @@
+▸ loaded 5,644 clips from /home/jasontitus/finetuneparakeet/results/baseline_test_full/per_clip.jsonl
+
+== Per-clip WER distribution ==
+  perfect (0% WER):  2,432  (43.1%)
+        0-5%:  0  (0.0%)
+       5-10%:  153  (2.7%)
+      10-20%:  1,008  (17.9%)
+      20-50%:  1,518  (26.9%)
+     50-100%:  384  (6.8%)
+      >=100%:  149  (2.6%)
+
+== Error type breakdown ==
+  substitutions:  5,660  (89.9%)
+  deletions:      368  (5.8%)
+  insertions:     269  (4.3%)
+
+== Top 40 substitution pairs ==
+     5× 'gyvena' → 'gyveno'  [ending]
+     5× 'ji' → 'jie'
+     4× 'veikė' → 'veikia'  [ending]
+     4× 'daugiausiai' → 'daugiausia'  [ending]
+     4× 'jį' → 'ji'
+     3× 'veikia' → 'veikė'  [ending]
+     3× 'baigiasi' → 'baigėsi'  [ending]
+     3× 'teritoriją' → 'teritorija'  [ending]
+     3× 'kinų' → 'kino'  [ending]
+     3× 'siekė' → 'siekia'  [ending]
+     3× 'aukštumose' → 'aukštumuose'  [ending]
+     3× 'savanose' → 'savanuose'  [ending]
+     3× 'jie' → 'ji'
+     3× 'augo' → 'auga'  [ending]
+     3× 'dvejus' → 'dviejus'
+     3× 'daugiausia' → 'daugiausiai'  [ending]
+     2× 'kariuomenę' → 'kariuomenė'  [ending]
+     2× 'ji' → 'jis'
+     2× 'triglavo' → 'tryglavo'
+     2× 'vynuogių' → 'vynuogio'  [ending]
+     2× 'dirbo' → 'dirba'  [ending]
+     2× 'santuoka' → 'santuuka'  [ending]
+     2× 'mišku' → 'miškų'  [ending]
+     2× 'teises' → 'teisės'  [ending]
+     2× 'kelią' → 'kelia'  [ending]
+     2× 'vitebsko' → 'vitepsko'  [ending]
+     2× 'juos' → 'jos'
+     2× 'thrash' → 'trash'
+     2× 'žvaigždes' → 'žvaigždės'  [ending]
+     2× 'lygą' → 'ligą'
+     2× 'rotary' → 'rotariai'  [ending]
+     2× 'kapituliacijos' → 'kapitulacijos'
+     2× 'laikraščio' → 'laikrašio'  [ending]
+     2× 'pasauliui' → 'pasaului'  [ending]
+     2× 'aukščiausiojo' → 'aukščiausio'  [ending]
+     2× 'atkreipia' → 'atkreipė'  [ending]
+     2× 'medicininės' → 'medicinės'  [ending]
+     2× 'fribūro' → 'friburo'  [ending]
+     2× 'rinktines' → 'rinktinės'  [ending]
+     2× 'tuo' → 'to'
+
+== Error category counts ==
+  total diff pairs:  4,830
+  ending-only:       1,934  (40.0%)
+  digit-related:     0  (0.0%)
+  foreign-letter:    32  (0.7%)
+
+== Duration vs error rate ==
+   0- 3s:  n= 177  avg_WER=34.32%
+   3- 6s:  n=3928  avg_WER=18.17%
+   6-10s:  n=1513  avg_WER=14.31%
+  10-15s:  n=  26  avg_WER=10.76%
+
+== 5 highest-WER clips ==
+  [200.00%]
+    REF: Dramblių smegenys gerai išsivysčiusios.
+    HYP: Drum Blue Swag in his garage, Miss Chuset.
+  [200.00%]
+    REF: Šeštojo dešimtmečio Venecija.
+    HYP: Și așa e deși bine cevenete.
+  [200.00%]
+    REF: Nieko neįsivaizduojamo neišvydo
+    HYP: Ніяко ні й свиздуємо ніч відо.
+  [200.00%]
+    REF: Buvo pavaldi apygardos mokyklai.
+    HYP: Був по води, а пидор до сму кикли.
+  [180.00%]
+    REF: Šiaurinėje pakrantėje plyti dirbami laukai.
+    HYP: Shoulding have apparently pleaded in the middle of the.

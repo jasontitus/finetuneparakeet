@@ -1,0 +1,75 @@
+▸ loaded 5,644 clips
+
+== Digit-related mismatches ==
+  clips with digits in REF: 0
+  clips with digits in HYP: 0
+
+== Abbreviation mismatches ==
+  clips with abbreviations in REF: 523
+  REF: Dumblas vietomis su molio arba smėlio priemaiša.
+  HYP: Dumblas vietomis su molio arba smėro priemaiša.
+
+  REF: Po kurio laiko parazitas miršta ir jo auka atsigauna.
+  HYP: Po kurio laiko parazitas miršta ir jo auką atsigauna.
+
+  REF: Ši data laikoma kombinuotų pašarų cecho įkūrimo data.
+  HYP: Ši data laikoma kombinuotų pašarų cecho įkūrimo data.
+
+  REF: Tais pačiais metais ir atstatyta.
+  HYP: Tais pačiais metais ir atstatyta.
+
+  REF: Tačiau pirmą kartą gyvenime ji turi palikti savo motiną Wanda.
+  HYP: Tačiau pirmą kartą gyvenime ji turi palikti savo motiną vandą.
+
+
+== Unicode normalization check ==
+  refs not already in NFC: 0
+
+== Hyphen errors ==
+  clips with hyphen in REF but not HYP: 0
+
+== Short-clip analysis (<3s) ==
+  short clips: 177
+  perfect among short: 75 (42.4%)
+  [2.8s]
+    REF: Tada ji vadinosi „Happy Slap“.
+    HYP: Tada jis vadinosi Happy Slap.
+  [2.7s]
+    REF: Turėjo nuosavos žemės.
+    HYP: Turėjo nuo savo žemės.
+  [2.7s]
+    REF: Kailis atspindi karštį.
+    HYP: Heilis atspindi karštį.
+  [2.5s]
+    REF: Teikia finansines paslaugas.
+    HYP: Teikia finansinės paslaugas.
+  [2.9s]
+    REF: Teatro pjesių autorius.
+    HYP: Tetro pjesių autorius.
+
+== Catastrophic clips (drift to wrong language, etc) ==
+  clips with >=100% WER: 149
+  [  125%]  4.6s  HYP: Жідіну Буна і виразу повідало.
+  [  100%]  5.5s  HYP: Спала кентаної Одасар Пилкасік Юродасару у Свіродас.
+  [  117%]  4.7s  HYP: Ріши строп секції в полике секретарі кореспонденти.
+  [  175%]  3.4s  HYP: Вiн нас плачався й на удовольний кінтуву.
+  [  120%]  3.4s  HYP: За крістія пришлята приближеніч ваш шону
+  [  100%]  4.0s  HYP: Розеты ташкой туридаво уж радіо.
+  [  100%]  2.8s  HYP: Бролис боліс больчулась.
+  [  100%]  3.2s  HYP: Ще один удомілюк криху.
+  [  100%]  2.9s  HYP: Miego rašyti e lėraraščius.
+  [  175%]  4.0s  HYP: Роду на науке с одобрением и власты.
+  [  120%]  4.5s  HYP: Синові часто є ще навоз зараз.
+  [  120%]  4.4s  HYP: Poreațele daugeau să nutevite în matală.
+  [  140%]  4.8s  HYP: Ritorcesie che veniu și urughiele și închilie.
+  [  100%]  3.1s  HYP: Я просидею на четвертьфинале.
+  [  100%]  6.0s  HYP: Upi užtvenktą statant Mingečia vyro hidroelektrine.
+
+== Error concentration ==
+  total word errors:      6,297
+  total reference words:  23,067
+  corpus-level WER:       27.30%
+  errors from top   10 clips:  96  (1.5% of total)
+  errors from top   50 clips:  383  (6.1% of total)
+  errors from top  100 clips:  671  (10.7% of total)
+  errors from top  500 clips:  2,212  (35.1% of total)

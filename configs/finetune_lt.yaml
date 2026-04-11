@@ -1,0 +1,48 @@
+# Fine-tune config for parakeet-tdt-0.6b-v3 on Lithuanian.
+#
+# Uses a raw PyTorch training loop (no Lightning) because:
+# 1. Lightning's CUDA graph toggling corrupts adapter state
+# 2. Lightning checkpoint callbacks failed silently in multiple runs
+# 3. We need tight per-epoch WER eval with early stopping
+#
+# The model is extremely sensitive — lr=5e-6 with frozen encoder
+# caused catastrophic forgetting in all Lightning-based runs. The raw
+# loop at lr=1e-6 is confirmed stable (debug_training.py).
+
+train:
+  max_epochs: 5
+  accumulate_grad_batches: 8       # effective batch = 2 × 8 = 16
+  gradient_clip_val: 1.0
+  log_every_n_steps: 100
+  early_stop_wer_delta: 5.0
+  # Train everything except preprocessor. BN stays frozen via
+  # _freeze_bn() — this is what makes encoder training safe.
+  trainable: [encoder, decoder, joint]
+
+data:
+  train_ds:
+    manifest_filepath: data/manifests/ALL_train.json
+    sample_rate: 16000
+    batch_size: 2
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    max_duration: 20.0
+    min_duration: 0.5
+    trim_silence: false
+    use_start_end_token: false
+    is_tarred: false
+  validation_ds:
+    manifest_filepath: data/manifests/cv25_lt_dev.json
+    sample_rate: 16000
+    batch_size: 4
+    shuffle: false
+    num_workers: 2
+    pin_memory: true
+    max_duration: 25.0
+
+optim:
+  # Lower LR when training the encoder — it's ~34x more params than
+  # decoder+joint alone, and encoder perturbations propagate to everything.
+  lr: 1.0e-6
+  weight_decay: 1.0e-3

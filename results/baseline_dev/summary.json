@@ -1,0 +1,10 @@
+{
+  "model": "nvidia/parakeet-tdt-0.6b-v3",
+  "manifest": "/home/jasontitus/finetuneparakeet/data/manifests/cv25_lt_dev.json",
+  "n_clips": 200,
+  "audio_seconds": 777.2879999999997,
+  "wall_seconds": 51.92494082450867,
+  "rtfx": 14.96945374722735,
+  "wer": 0.003418803418803419,
+  "cer": 0.0007018364721020002
+}

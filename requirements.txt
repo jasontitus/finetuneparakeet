@@ -1,0 +1,38 @@
+# Core ML stack — pinned to a working combo on macOS arm64 + Python 3.11.
+# NeMo 2.x is the modern line (Lightning-based). Installs torch, torchaudio,
+# hydra, omegaconf, etc. as transitive deps, but we pin the critical ones
+# to avoid ABI drift.
+
+torch>=2.2,<2.9
+torchaudio>=2.2,<2.9
+numpy>=1.26,<2.3
+
+# NeMo ASR. nemo_toolkit pulls in lightning, hydra-core, omegaconf, editdistance,
+# sentencepiece, etc. We pin a recent-but-stable 2.x release.
+nemo_toolkit[asr]>=2.0,<2.5
+
+# Lightning direct pin — NeMo sometimes lags the latest major; pin a version
+# compatible with its current requirement.
+lightning>=2.2,<2.6
+
+# Data + audio
+datasets>=2.18,<4
+soundfile>=0.12
+librosa>=0.10
+pandas>=2.0
+
+# Eval
+jiwer>=3.0
+
+# Tokenizer + transformers (for fallback paths and normalization)
+transformers>=4.40,<4.60
+sentencepiece>=0.2
+
+# numba CUDA — pin to 0.15.1 on WSL2 to avoid nvJitLink compilation
+# failures with newer versions. See WSL2_CUDA_ISSUES.md Issue 4.
+# Not needed on GCP/native Linux (but harmless to install).
+numba-cuda==0.15.1
+
+# Optional but handy
+tqdm>=4.66
+rich>=13.7

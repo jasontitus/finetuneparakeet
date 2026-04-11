@@ -1,0 +1,10 @@
+{
+  "model": "nvidia/parakeet-tdt-0.6b-v3",
+  "manifest": "data/manifests/cv25_lt_test.json",
+  "n_clips": 5644,
+  "audio_seconds": 29441.93599999994,
+  "wall_seconds": 66.67941451072693,
+  "rtfx": 441.54460887270574,
+  "wer": 0.16703423650493593,
+  "cer": 0.043858917122154076
+}

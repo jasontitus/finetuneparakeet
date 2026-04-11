@@ -1,0 +1,45 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Data (large, reproducible from scripts)
+data/cv25_lt/
+data/manifests/audio/
+data/lm/*.arpa
+data/lm/*.pkl
+
+# Manifests contain absolute paths — committed but machine-specific.
+# Keep them so the training recipe is reproducible, but note that
+# paths need adjustment when running on a different machine.
+
+# Claude Code local settings
+.claude/
+
+# Training artifacts (large, re-generated per run)
+checkpoints/
+lightning_logs/
+*.nemo
+*.ckpt
+
+# Eval outputs (large, re-generated)
+results/*/per_clip.jsonl
+# Keep summary.json and text reports for history
+!results/*/summary.json
+
+# Logs
+*.log
+nohup.out
+/tmp/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
