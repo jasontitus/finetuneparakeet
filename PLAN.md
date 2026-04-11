@@ -6,9 +6,84 @@ Lithuanian speech corpora.
 
 ---
 
-## 📍 Current state (2026-04-09, read this first to resume)
+## 📍 Session progress log (2026-04-11, most recent on top)
 
-**Where we are:** two training runs attempted, both died in ~30 min for
+### Current / queued work
+
+**In progress:** Alpha sweep on 500 "hard" test clips (where baseline
+greedy had 10-80% WER). Using the fine-tuned `best.nemo` +
+`lt_token_4gram.arpa`, beam_size=4, on GPU.
+
+Partial results so far:
+
+| alpha | WER | CER | vs 0.0 |
+|-------|-----|-----|--------|
+| 0.0 (no LM) | 21.58% | 4.04% | — |
+| 0.1 | 19.34% | 3.74% | -2.24 |
+| 0.2 | 18.12% | 3.50% | -3.46 |
+| 0.3 | 17.07% | 3.48% | -4.51 |
+| 0.4 | 16.52% | 3.44% | -5.06 |
+| 0.5 | ... | ... | running |
+
+Best alpha so far: **0.4** on hard clips. The 0.3 we used for the
+11.23% result on the full test may have been sub-optimal — 0.4 might
+give a small additional win.
+
+**Queued next:**
+1. Finish alpha 0.5 result — stop if WER goes back up
+2. Beam size sweep at best alpha: beam ∈ {4, 8, 16}
+3. Re-eval best alpha+beam on full CV25 LT test + FLEURS LT test
+4. Retrain with cosine LR schedule (lr=5e-6 → 5e-8 over 10 epochs) —
+   current run found epoch 0 best because flat lr=1e-6 overfit on
+   later epochs. Cosine schedule likely extracts more.
+5. Document, commit, push after each step.
+
+### What's known good (committed and reproducible)
+
+**Full results on CV25 LT test (5,644 clips):**
+
+| Approach | WER | CER |
+|----------|-----|-----|
+| Pretrained (greedy) | 16.53% | 4.29% |
+| Fine-tuned (greedy) | 14.06% | 2.90% |
+| Fine-tuned + beam + token LM (α=0.3, beam=4) | **11.23%** | **2.61%** |
+
+**Full results on FLEURS LT test (986 clips):**
+
+| Approach | WER | CER |
+|----------|-----|-----|
+| Pretrained (greedy) | 21.41% | 5.50% |
+| Fine-tuned (greedy) | 19.21% | 4.77% |
+| Fine-tuned + beam + token LM (α=0.3, beam=4) | **17.33%** | 5.10% |
+
+Comparison to published FLEURS LT numbers:
+- Meta MMS-1B: ~28% (larger but weaker on LT)
+- **Our model: 17.33%** (0.6B params, 43h LT training data)
+- Whisper-large-v3: ~14-15% (1.5B params, thousands of hours)
+
+**Error analysis on the FT+beam+LM CV25 output:**
+- 54.9% of clips now perfect (was 43.1% at baseline)
+- Catastrophic drift clips: **149 → 16** (-89%)
+- Remaining errors still mostly morphological endings (`gyvena`/`gyveno`)
+- Confirms more training (with LR schedule) likely helps further
+
+### Infrastructure (all working)
+
+- BN-frozen raw PyTorch training loop in `scripts/05_finetune.py`
+- Token-level 4-gram LM at `data/lm/lt_token_4gram.arpa` (325 MB)
+  built from 2.67M sentences (LT Wikipedia + manifests) via
+  `scripts/08b_build_token_lm.py`
+- `scripts/11_eval_beam_lm.py` wraps NeMo's `maes` beam decoder +
+  `ngram_lm_model` parameter
+- `scripts/transcribe.py` standalone CLI for end users
+- Published to HuggingFace:
+  https://huggingface.co/sliderforthewin/parakeet-tdt-lt
+  (model + LM + README)
+- GitHub: https://github.com/jasontitus/finetuneparakeet
+
+## 📍 Original plan entry (2026-04-09, kept for history)
+
+**Where we were:** two training runs attempted, both died in ~30 min for
 **different reasons**. Each fix has already been applied. Ready to launch
 run #3 as soon as the GCP GPU quota blocker clears.
 

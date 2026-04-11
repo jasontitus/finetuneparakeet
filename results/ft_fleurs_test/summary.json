@@ -1,0 +1,10 @@
+{
+  "model": "/home/jasontitus/finetuneparakeet/checkpoints/lt-ft-wsl/best.nemo",
+  "manifest": "/home/jasontitus/finetuneparakeet/data/manifests/fleurs_lt_test.json",
+  "n_clips": 986,
+  "audio_seconds": 10686.539999999997,
+  "wall_seconds": 12.801942110061646,
+  "rtfx": 834.7592816874984,
+  "wer": 0.19205182072829133,
+  "cer": 0.0477088561062541
+}

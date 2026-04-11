@@ -227,12 +227,17 @@ def main() -> int:
     print(f"  trainable: {n_params/1e6:.1f}M / {total_params/1e6:.1f}M "
           f"({100*n_params/total_params:.1f}%)", flush=True)
 
-    # ── Optimizer ─────────────────────────────────────────────────
+    # ── Optimizer + scheduler ─────────────────────────────────────
     lr = float(cfg.optim.get("lr", 1e-6))
     wd = float(cfg.optim.get("weight_decay", 1e-3))
+    min_lr = float(cfg.optim.get("min_lr", 0.0))
+    warmup_steps = int(cfg.optim.get("warmup_steps", 0))
     optimizer = torch.optim.AdamW(trainable, lr=lr, weight_decay=wd,
                                   betas=(0.9, 0.98))
     print(f"  optimizer: AdamW lr={lr} wd={wd}", flush=True)
+    if warmup_steps > 0 or min_lr > 0:
+        print(f"  lr schedule: warmup_steps={warmup_steps} → cos decay to {min_lr}",
+              flush=True)
 
     # ── Training config ───────────────────────────────────────────
     max_epochs = int(cfg.train.get("max_epochs", 5))
@@ -323,13 +328,32 @@ def main() -> int:
                 optimizer.zero_grad()
                 global_step += 1
 
+                # LR schedule: linear warmup → cosine decay to min_lr.
+                if warmup_steps > 0 or min_lr > 0:
+                    import math
+                    total_steps = max_epochs * max(1, len(train_dl) // accum_steps)
+                    if global_step < warmup_steps:
+                        factor = global_step / max(warmup_steps, 1)
+                        cur_lr = lr * factor
+                    else:
+                        progress = (global_step - warmup_steps) / max(
+                            total_steps - warmup_steps, 1
+                        )
+                        progress = min(max(progress, 0.0), 1.0)
+                        cur_lr = min_lr + 0.5 * (lr - min_lr) * (
+                            1 + math.cos(math.pi * progress)
+                        )
+                    for pg in optimizer.param_groups:
+                        pg["lr"] = cur_lr
+
                 if global_step % log_every == 0:
                     avg = epoch_loss / n_loss
                     elapsed = time.time() - t0
                     it_s = (batch_idx + 1) / elapsed
+                    current_lr = optimizer.param_groups[0]["lr"]
                     print(
                         f"  step {global_step}  batch {batch_idx+1}  "
-                        f"loss={avg:.4f}  {it_s:.1f} it/s",
+                        f"loss={avg:.4f}  lr={current_lr:.2e}  {it_s:.1f} it/s",
                         flush=True,
                     )
 

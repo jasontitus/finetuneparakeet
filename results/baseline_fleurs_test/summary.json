@@ -1,0 +1,10 @@
+{
+  "model": "nvidia/parakeet-tdt-0.6b-v3",
+  "manifest": "/home/jasontitus/finetuneparakeet/data/manifests/fleurs_lt_test.json",
+  "n_clips": 986,
+  "audio_seconds": 10686.539999999997,
+  "wall_seconds": 13.247690916061401,
+  "rtfx": 806.6718998586928,
+  "wer": 0.21411064425770307,
+  "cer": 0.05503700033564019
+}

@@ -1,0 +1,10 @@
+{
+  "model": "/home/jasontitus/finetuneparakeet/checkpoints/lt-ft-wsl/best.nemo",
+  "manifest": "/home/jasontitus/finetuneparakeet/data/manifests/hard_test_500.json",
+  "lm": "/home/jasontitus/finetuneparakeet/data/lm/lt_token_4gram.arpa",
+  "beam_size": 4,
+  "alpha": 0.0,
+  "n_clips": 500,
+  "WER": 21.58273381294964,
+  "CER": 4.039930805823843
+}

@@ -1,0 +1,86 @@
+▸ loaded 5,644 clips from /home/jasontitus/finetuneparakeet/results/ft_beamlm_test/per_clip.jsonl
+
+== Per-clip WER distribution ==
+  perfect (0% WER):  3,098  (54.9%)
+        0-5%:  0  (0.0%)
+       5-10%:  179  (3.2%)
+      10-20%:  913  (16.2%)
+      20-50%:  1,199  (21.2%)
+     50-100%:  239  (4.2%)
+      >=100%:  16  (0.3%)
+
+== Error type breakdown ==
+  substitutions:  3,801  (88.8%)
+  deletions:      382  (8.9%)
+  insertions:     96  (2.2%)
+
+== Top 40 substitution pairs ==
+     5× 'daugiausiai' → 'daugiausia'  [ending]
+     5× 'ji' → 'jie'
+     4× 'veikė' → 'veikia'  [ending]
+     4× 'daugumą' → 'dauguma'  [ending]
+     4× 'gyvena' → 'gyveno'  [ending]
+     3× 'veikia' → 'veikė'  [ending]
+     3× 'baigiasi' → 'baigėsi'  [ending]
+     3× 'daugiausia' → 'daugiausiai'  [ending]
+     3× 'savanose' → 'savanuose'  [ending]
+     3× 'augo' → 'auga'  [ending]
+     2× 'kariuomenę' → 'kariuomenė'  [ending]
+     2× 'kisti' → 'keisti'
+     2× 'ji' → 'jis'
+     2× 'tarme' → 'tarmė'  [ending]
+     2× 'triglavo' → 'tryglavo'
+     2× 'dirbo' → 'dirba'  [ending]
+     2× 'santuoka' → 'santuka'  [ending]
+     2× 'mišku' → 'miškų'  [ending]
+     2× 'pavidalo' → 'pavidalu'  [ending]
+     2× 'vienas' → 'vienos'  [ending]
+     2× 'žvaigždes' → 'žvaigždės'  [ending]
+     2× 'pirštines' → 'pirštinės'  [ending]
+     2× 'atkreipia' → 'atkreipė'  [ending]
+     2× 'iš' → 'į'
+     2× 'centro“' → 'centro'  [ending]
+     2× 'rinktines' → 'rinktinės'  [ending]
+     2× 'miestų' → 'miesto'  [ending]
+     2× 'tęsiasi' → 'tęsėsi'  [ending]
+     2× 'šono' → 'šonų'  [ending]
+     2× 'atliekamas' → 'atliekamos'  [ending]
+     2× 'įeina' → 'eina'
+     2× 'žalgiris“' → 'žalgiris'  [ending]
+     2× 'upė“' → 'upė'  [ending]
+     2× 'viena' → 'vienas'  [ending]
+     2× 'partija' → 'partiją'  [ending]
+     2× 'jo' → 'jos'
+     2× 'galvos“' → 'galvos'  [ending]
+     2× 'buriuotojų' → 'būriuotojų'
+     2× 'siekė' → 'siekia'  [ending]
+     2× 'miestelio' → 'miestelių'  [ending]
+
+== Error category counts ==
+  total diff pairs:  3,606
+  ending-only:       1,652  (45.8%)
+  digit-related:     1  (0.0%)
+  foreign-letter:    25  (0.7%)
+
+== Duration vs error rate ==
+   0- 3s:  n= 177  avg_WER=17.14%
+   3- 6s:  n=3928  avg_WER=11.19%
+   6-10s:  n=1513  avg_WER=10.82%
+  10-15s:  n=  26  avg_WER= 9.33%
+
+== 5 highest-WER clips ==
+  [250.00%]
+    REF: Penktas didžiausias stadionas Lietuvoje.
+    HYP: bank of the justice to the ones that we are
+  [133.33%]
+    REF: Šeštojo dešimtmečio Venecija.
+    HYP: Și aštra e dešimtmečiovenețe
+  [100.00%]
+    REF: Raudoname lauke sidabrinė juosta.
+    HYP: Rodna nauke se dobry.
+  [100.00%]
+    REF: Kaune jidiš kalba.
+    HYP: Колня едиш колба.
+  [100.00%]
+    REF: Pravienos vardo etimologija neaiški.
+    HYP: Pra vienos varto etimologija neiški.
