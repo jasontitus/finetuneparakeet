@@ -46,11 +46,11 @@ def normalize(s: str) -> str:
     return s
 
 
-def read_texts(manifests: list[Path]) -> list[str]:
+def read_texts(manifests: list[Path], text_corpora: list[Path] | None = None) -> list[str]:
     texts: list[str] = []
     for m in manifests:
         if not m.exists():
-            print(f"  ! missing: {m}", file=sys.stderr)
+            print(f"  ! missing manifest: {m}", file=sys.stderr)
             continue
         n = 0
         with m.open() as f:
@@ -66,6 +66,21 @@ def read_texts(manifests: list[Path]) -> list[str]:
                     texts.append(t)
                     n += 1
         print(f"  {m.name}: {n:,} sentences")
+
+    # Raw text corpora (one pre-normalized sentence per line).
+    for tc in text_corpora or []:
+        if not tc.exists():
+            print(f"  ! missing corpus: {tc}", file=sys.stderr)
+            continue
+        n = 0
+        with tc.open() as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                texts.append(line)
+                n += 1
+        print(f"  {tc.name}: {n:,} sentences")
     return texts
 
 
@@ -157,13 +172,21 @@ def write_arpa(path: Path, counters: list[Counter], vocab: set[str], order: int)
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--manifests", type=Path, nargs="+", required=True)
+    ap.add_argument("--manifests", type=Path, nargs="*", default=[])
+    ap.add_argument("--text-corpus", type=Path, nargs="*", default=[],
+                    help="Additional plain-text corpora (one normalized sentence per line)")
     ap.add_argument("--order", type=int, default=4)
+    ap.add_argument("--min-count", type=int, default=1,
+                    help="Drop n-grams seen fewer than this many times (bigger LM → use 2 or 3)")
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
 
-    print(f"▸ reading {len(args.manifests)} manifests...")
-    texts = read_texts(args.manifests)
+    if not args.manifests and not args.text_corpus:
+        print("error: need at least one --manifests or --text-corpus", file=sys.stderr)
+        return 2
+
+    print(f"▸ reading {len(args.manifests)} manifests + {len(args.text_corpus)} corpora...")
+    texts = read_texts(args.manifests, args.text_corpus)
     print(f"▸ total sentences: {len(texts):,}")
 
     print(f"▸ counting {args.order}-grams...")
@@ -171,6 +194,15 @@ def main():
     for n, c in enumerate(counters, start=1):
         print(f"  {n}-grams: {len(c):,}  (total counts: {sum(c.values()):,})")
     print(f"  vocab: {len(vocab):,}")
+
+    # Apply min-count filter to higher orders (keeps unigrams intact so
+    # probabilities still sum to 1). This dramatically shrinks the LM
+    # on big corpora and drops unreliable hapax n-grams.
+    if args.min_count > 1:
+        for i in range(1, args.order):
+            before = len(counters[i])
+            counters[i] = Counter({ng: c for ng, c in counters[i].items() if c >= args.min_count})
+            print(f"  filtered {i+1}-grams: {before:,} → {len(counters[i]):,} (min_count={args.min_count})")
 
     print(f"▸ writing ARPA to {args.out}...")
     write_arpa(args.out, counters, vocab, args.order)

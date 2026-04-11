@@ -449,6 +449,46 @@ Corrections applied:
   GCP console request. Current global quota is 1 and the
   `speechbench-eslt300-01` T4 spot VM is holding it.
 
+### WSL2 run — 2026-04-10/11 (first successful fine-tune)
+
+This unblocked us from GCP by running on the user's local WSL2 +
+RTX 3090 setup. All catastrophic-forgetting failures from runs
+#1-#3 turned out to have the same root cause:
+
+**Root cause of all prior regressions:** BatchNorm running statistics
+get updated in `model.train()` mode, which corrupts the pretrained
+encoder's normalization stats. Even `torch.no_grad()` forward passes
+(no optimizer, no gradients) in train mode destroy the model. Fine-
+tuning at ANY learning rate hit this.
+
+**Fix:** Freeze all BatchNorm layers to eval mode after calling
+`model.train()`. One loop, ~4 lines of code. See
+`_freeze_bn()` in `scripts/05_finetune.py`.
+
+**Other infrastructure fixes from this session:**
+- WSL2 numba-cuda nvJitLink crash → pin `numba-cuda==0.15.1`
+- Lightning checkpoint callbacks failing silently → switched to raw
+  PyTorch training loop with per-epoch WER eval
+- Adapter weights ending up on CPU while model is on CUDA (silent)
+- Manifests lowercased/punctuation-stripped while the pretrained
+  tokenizer expects raw case+punctuation → rebuilt manifests
+
+**Run config** (currently running as of 2026-04-11):
+- Model: pretrained parakeet-tdt-0.6b-v3
+- Trainable: encoder + decoder + joint (627M params), BN frozen
+- LR: 1e-6, AdamW, no schedule
+- SpecAugment: on (built into the model)
+- Data: all 4 LT datasets, 5 epochs, batch 2 × accum 8
+- Per-epoch WER eval on 200 dev clips with early stop if > baseline+5pp
+- No amp (RNN-T loss is fp32-sensitive)
+
+**Results (in-progress):**
+- Baseline: 0.68% on 200-clip easy subset, 10.16% on full dev (5,545),
+  16.53% on full test (5,644)
+- Epoch 0: 0.51% on 200-clip subset (first real improvement)
+- Epoch 1: 0.51% on 200-clip subset
+- Full dev/test eval pending after training completes
+
 ### Cumulative spend so far
 
 | run | outcome | cost |
@@ -501,19 +541,30 @@ Script: `scripts/06_error_analysis.py`. Findings on baseline test:
 - No digit/abbreviation/normalization issues (the eval metric is
   legit).
 
-### B. N-gram LM rescoring — ARPA BUILT, BEAM SEARCH WIP
-Script: `scripts/08_build_lm.py`. Trained 4-gram LM on CV25+VoxPopuli+
-FLEURS+shunyalabs training text (24K sentences, 38K vocab, 133K
-4-grams) → `data/lm/lt_4gram.arpa` (17 MB). Loads in `kenlm` Python
-bindings for fast querying.
+### B. N-gram LM rescoring — WORKING
+Scripts: `scripts/08_build_lm.py`, `scripts/10_download_lt_wikipedia.py`,
+`scripts/11_eval_beam_lm.py`.
 
-**Blocker:** parakeet's greedy TDT decoder doesn't expose n-best
-hypotheses. Need to switch to beam search (NeMo supports this via
-`change_decoding_strategy`) and apply LM scoring to the beam. Plumbing
-TODO.
+**Corpus:**
+- Initial manifests-only LM: 24K sentences, 38K vocab, 133K 4-grams
+- Added LT Wikipedia via HuggingFace `wikimedia/wikipedia/20231101.lt`:
+  211,292 articles → 2,647,722 cleaned sentences
+- Combined corpus: **2,672,344 sentences, 1.24M unigrams**
+- File: `data/lm/lt_wiki_4gram.arpa` (313 MB with min-count=2)
 
-Expected impact: 10-20% relative WER improvement on top of
-whatever fine-tuning gives us.
+**Decoder integration:** NeMo's `maes` (Modified Adaptive Expansion
+Search) strategy supports `ngram_lm_model` directly. Switching is
+one `change_decoding_strategy()` call. `scripts/11_eval_beam_lm.py`
+wraps this.
+
+**Results so far** (pretrained baseline, no fine-tune):
+- On 50 easy dev clips: greedy 1.00%, beam+LM 1.00% (no room to improve)
+- On 200 easy dev clips: greedy 0.68%, beam+LM 0.68% for all alpha values
+- On **149 drift clips** (baseline greedy >100% WER each):
+  - Greedy (unmasked): 115.82%
+  - Greedy + tokenizer mask: 106.10%
+  - **Beam+LM alpha=0.5: 102.31%** — best
+- Full 5,644-clip test: in progress
 
 ### C. SpecAugment — ALREADY ACTIVE
 Parakeet-tdt ships with SpecAugment built into its architecture
