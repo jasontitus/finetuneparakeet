@@ -2,7 +2,7 @@
 """Transcribe audio with the fine-tuned Lithuanian parakeet-tdt model.
 
 Simple standalone runner for the model published at
-`jasontitus/parakeet-tdt-lt` on HuggingFace Hub. Handles downloading,
+`sliderforthewin/parakeet-tdt-lt` on HuggingFace Hub. Handles downloading,
 device placement, optional LM fusion, and printing results.
 
 Examples:
@@ -37,7 +37,7 @@ import time
 from pathlib import Path
 
 
-DEFAULT_MODEL = "jasontitus/parakeet-tdt-lt"
+DEFAULT_MODEL = "sliderforthewin/parakeet-tdt-lt"
 DEFAULT_LM_FILENAME = "lt_token_4gram.arpa"
 
 

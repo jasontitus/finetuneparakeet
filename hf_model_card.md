@@ -66,7 +66,7 @@ pip install 'nemo_toolkit[asr]>=2.0,<2.5' torch
 ```python
 import nemo.collections.asr as nemo_asr
 
-model = nemo_asr.models.ASRModel.from_pretrained("jasontitus/parakeet-tdt-lt")
+model = nemo_asr.models.ASRModel.from_pretrained("sliderforthewin/parakeet-tdt-lt")
 model = model.to("cuda")
 model.eval()
 
@@ -91,11 +91,11 @@ import nemo.collections.asr as nemo_asr
 from huggingface_hub import hf_hub_download
 from omegaconf import open_dict
 
-model = nemo_asr.models.ASRModel.from_pretrained("jasontitus/parakeet-tdt-lt")
+model = nemo_asr.models.ASRModel.from_pretrained("sliderforthewin/parakeet-tdt-lt")
 model = model.to("cuda").eval()
 
 lm_path = hf_hub_download(
-    repo_id="jasontitus/parakeet-tdt-lt",
+    repo_id="sliderforthewin/parakeet-tdt-lt",
     filename="lt_token_4gram.arpa",
 )
 
@@ -169,7 +169,7 @@ datasets:
   title={parakeet-tdt-lt: Lithuanian fine-tune of parakeet-tdt-0.6b-v3},
   author={Titus, Jason},
   year={2026},
-  howpublished={\url{https://huggingface.co/jasontitus/parakeet-tdt-lt}},
+  howpublished={\url{https://huggingface.co/sliderforthewin/parakeet-tdt-lt}},
 }
 ```
 

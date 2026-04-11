@@ -43,7 +43,7 @@ import nemo.collections.asr as nemo_asr
 
 # Download + load from HuggingFace Hub
 model = nemo_asr.models.ASRModel.from_pretrained(
-    "jasontitus/parakeet-tdt-lt"
+    "sliderforthewin/parakeet-tdt-lt"
 )
 model = model.to("cuda")  # or "cpu"
 model.eval()
@@ -72,12 +72,12 @@ from omegaconf import open_dict
 
 # 1. Load the model
 model = nemo_asr.models.ASRModel.from_pretrained(
-    "jasontitus/parakeet-tdt-lt"
+    "sliderforthewin/parakeet-tdt-lt"
 ).to("cuda").eval()
 
 # 2. Download the LM from the same HF repo
 lm_path = hf_hub_download(
-    repo_id="jasontitus/parakeet-tdt-lt",
+    repo_id="sliderforthewin/parakeet-tdt-lt",
     filename="lt_token_4gram.arpa",
 )
 
