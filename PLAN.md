@@ -473,7 +473,7 @@ tuning at ANY learning rate hit this.
 - Manifests lowercased/punctuation-stripped while the pretrained
   tokenizer expects raw case+punctuation → rebuilt manifests
 
-**Run config** (currently running as of 2026-04-11):
+**Run config:**
 - Model: pretrained parakeet-tdt-0.6b-v3
 - Trainable: encoder + decoder + joint (627M params), BN frozen
 - LR: 1e-6, AdamW, no schedule
@@ -482,12 +482,28 @@ tuning at ANY learning rate hit this.
 - Per-epoch WER eval on 200 dev clips with early stop if > baseline+5pp
 - No amp (RNN-T loss is fp32-sensitive)
 
-**Results (in-progress):**
-- Baseline: 0.68% on 200-clip easy subset, 10.16% on full dev (5,545),
-  16.53% on full test (5,644)
-- Epoch 0: 0.51% on 200-clip subset (first real improvement)
-- Epoch 1: 0.51% on 200-clip subset
-- Full dev/test eval pending after training completes
+**Training results:**
+- Epoch 0 avg_loss 0.93, 200-clip WER 0.51% ← best
+- Epoch 1 avg_loss 0.74, 200-clip WER 0.51%
+- Epoch 2 avg_loss 0.71, 200-clip WER 0.60%
+- Epoch 3 avg_loss 0.69, 200-clip WER 0.68%
+- Epoch 4 avg_loss 0.68, 200-clip WER 0.68%
+- `best.nemo` = epoch 0 checkpoint
+
+## Final results on CV25 LT full test set (5,644 clips)
+
+| Approach | WER | CER | Δ vs baseline |
+|----------|-----|-----|---|
+| Baseline (pretrained, greedy) | 16.53% | 4.29% | — |
+| Baseline + beam + WORD-LM α=0.5 | 18.63% | 5.22% | +2.10 (worse, LM bug) |
+| **Fine-tuned (epoch 0, greedy)** | **14.06%** | **2.90%** | **-2.47** |
+| **Fine-tuned + beam + token-LM α=0.3** | **11.23%** | **2.61%** | **-5.30** |
+
+**Total: -5.30pp absolute, 32% relative WER reduction.** Both
+components (FT and LM fusion) contribute independently and stack
+cleanly. CER improvement is proportionally larger, confirming the
+fine-tune fixed a lot of the Lithuanian morphological-ending errors
+identified in the baseline error analysis.
 
 ### Cumulative spend so far
 
@@ -542,29 +558,34 @@ Script: `scripts/06_error_analysis.py`. Findings on baseline test:
   legit).
 
 ### B. N-gram LM rescoring — WORKING
-Scripts: `scripts/08_build_lm.py`, `scripts/10_download_lt_wikipedia.py`,
-`scripts/11_eval_beam_lm.py`.
+Scripts: `scripts/08_build_lm.py` (word-level, NOT USED — see below),
+`scripts/08b_build_token_lm.py` (**correct, token-level**),
+`scripts/10_download_lt_wikipedia.py`, `scripts/11_eval_beam_lm.py`.
 
-**Corpus:**
-- Initial manifests-only LM: 24K sentences, 38K vocab, 133K 4-grams
-- Added LT Wikipedia via HuggingFace `wikimedia/wikipedia/20231101.lt`:
-  211,292 articles → 2,647,722 cleaned sentences
-- Combined corpus: **2,672,344 sentences, 1.24M unigrams**
-- File: `data/lm/lt_wiki_4gram.arpa` (313 MB with min-count=2)
+**Gotcha — discovered 2026-04-11:** NeMo's TDT beam decoder
+(`tdt_beam_decoding.py:806-809`) queries the LM with
+`chr(token_id + 100)`, **not with actual words**. An LM trained on
+word text silently does nothing — or worse, gives random backoff
+probabilities that degrade WER (we saw 18.63% vs 16.53% greedy at
+alpha=0.5). The LM MUST be built on subword token ID sequences:
+1. Tokenize every training sentence with the model's tokenizer
+2. Map each token ID to `chr(id + DEFAULT_TOKEN_OFFSET)` where
+   `DEFAULT_TOKEN_OFFSET = 100`
+3. Train n-gram counts on these character sequences
+4. Write ARPA with these characters as the "vocabulary"
 
-**Decoder integration:** NeMo's `maes` (Modified Adaptive Expansion
-Search) strategy supports `ngram_lm_model` directly. Switching is
-one `change_decoding_strategy()` call. `scripts/11_eval_beam_lm.py`
-wraps this.
+**Final LM (token-level on combined corpus):**
+- 2,672,344 sentences (manifests + LT Wikipedia)
+- 95.7M tokens (35.8 per sentence average)
+- 6,993 distinct token types (1,199 vocab slots never used in LT)
+- 7.4M 4-grams after min-count=2 filter
+- File: `data/lm/lt_token_4gram.arpa` (325 MB)
 
-**Results so far** (pretrained baseline, no fine-tune):
-- On 50 easy dev clips: greedy 1.00%, beam+LM 1.00% (no room to improve)
-- On 200 easy dev clips: greedy 0.68%, beam+LM 0.68% for all alpha values
-- On **149 drift clips** (baseline greedy >100% WER each):
-  - Greedy (unmasked): 115.82%
-  - Greedy + tokenizer mask: 106.10%
-  - **Beam+LM alpha=0.5: 102.31%** — best
-- Full 5,644-clip test: in progress
+**Decoder integration:** NeMo's `maes` strategy via
+`model.change_decoding_strategy(...)`, passing `ngram_lm_model` and
+`ngram_lm_alpha`.
+
+**Final results — see session progress section for the full table.**
 
 ### C. SpecAugment — ALREADY ACTIVE
 Parakeet-tdt ships with SpecAugment built into its architecture

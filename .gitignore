@@ -13,6 +13,7 @@ data/cv25_lt/
 data/manifests/audio/
 data/lm/*.arpa
 data/lm/*.pkl
+data/lm/*.txt
 
 # Manifests contain absolute paths — committed but machine-specific.
 # Keep them so the training recipe is reproducible, but note that

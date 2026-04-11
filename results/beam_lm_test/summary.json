@@ -1,0 +1,10 @@
+{
+  "model": "nvidia/parakeet-tdt-0.6b-v3",
+  "manifest": "/home/jasontitus/finetuneparakeet/data/manifests/cv25_lt_dev.json",
+  "lm": "/home/jasontitus/finetuneparakeet/data/lm/lt_wiki_4gram.arpa",
+  "beam_size": 4,
+  "alpha": 0.3,
+  "n_clips": 50,
+  "WER": 1.0033444816053512,
+  "CER": 0.13654984069185253
+}
