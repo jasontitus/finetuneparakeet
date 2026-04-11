@@ -15,9 +15,9 @@ data/lm/*.arpa
 data/lm/*.pkl
 data/lm/*.txt
 
-# Manifests contain absolute paths — committed but machine-specific.
-# Keep them so the training recipe is reproducible, but note that
-# paths need adjustment when running on a different machine.
+# Manifests contain machine-specific absolute paths (e.g. /Users/<user>/...).
+# Rebuilt on each machine by scripts/03_prepare_manifests.py, so no need to track.
+data/manifests/
 
 # Claude Code local settings
 .claude/
