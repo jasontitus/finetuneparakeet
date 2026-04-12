@@ -101,6 +101,27 @@ ls -la
 
 # Check whether a previous VM for this RUN_ID already wrote checkpoints
 # to GCS. If so, pull them down now so the training script can resume.
+# Pre-cache the pretrained model from GCS instead of HuggingFace.
+# HF downloads stall on GCP VMs (~20 min for 2.3GB then hang). The
+# .nemo file in GCS is the same model, just faster to pull.
+PRETRAINED_GCS="$BUCKET/corpora/models/parakeet-tdt-0.6b-v3.nemo"
+PRETRAINED_LOCAL="/opt/ftparakeet/pretrained-parakeet-tdt-0.6b-v3.nemo"
+if gsutil -q stat "$PRETRAINED_GCS" 2>/dev/null; then
+  echo "▶ pre-caching pretrained model from GCS (faster than HF)"
+  gsutil -q cp "$PRETRAINED_GCS" "$PRETRAINED_LOCAL"
+  echo "  ✓ $(du -sh $PRETRAINED_LOCAL | cut -f1)"
+fi
+
+# Pre-cache the token LM for beam+LM eval (if available).
+LM_GCS="$BUCKET/corpora/lm/lt_token_4gram.arpa"
+LM_LOCAL="/opt/ftparakeet/data/lm/lt_token_4gram.arpa"
+if gsutil -q stat "$LM_GCS" 2>/dev/null; then
+  echo "▶ pre-caching token LM from GCS"
+  mkdir -p /opt/ftparakeet/data/lm
+  gsutil -q cp "$LM_GCS" "$LM_LOCAL"
+  echo "  ✓ $(du -sh $LM_LOCAL | cut -f1)"
+fi
+
 echo "▶ checking for resumable state at $CKPT_PREFIX_GCS"
 mkdir -p /opt/ftparakeet/checkpoints/lt-ft
 if gsutil -q ls "$CKPT_PREFIX_GCS/lt-ft/" >/dev/null 2>&1; then
@@ -181,9 +202,13 @@ case "$MODE" in
     TEST_MANIFEST="data/manifests/cv25_lt_test.json"
     BASELINE_EVAL_CAP=""
     POST_EVAL_CAP=""
-    # Full run: allow up to 16 hours before the script kills itself to
-    # prevent runaway spend in case training stalls.
     PIPELINE_TIMEOUT=57600   # 16 hours
+    # Use local .nemo if pre-cached from GCS (faster than HF download).
+    if [ -f /opt/ftparakeet/pretrained-parakeet-tdt-0.6b-v3.nemo ]; then
+      PRETRAINED_MODEL="/opt/ftparakeet/pretrained-parakeet-tdt-0.6b-v3.nemo"
+    else
+      PRETRAINED_MODEL="nvidia/parakeet-tdt-0.6b-v3"
+    fi
     ;;
   *)
     echo "✗ unknown mode: $MODE (expected smoke or full)"
@@ -206,9 +231,9 @@ cd /opt/ftparakeet
 echo "▶ Step 1: build manifests"
 "$PY" scripts/03_prepare_manifests.py $PREP_ARGS
 
-echo "▶ Step 2: baseline eval (pretrained parakeet-tdt-0.6b-v3)"
+echo "▶ Step 2: baseline eval (pretrained)"
 "$PY" scripts/04_eval.py \\
-  --model nvidia/parakeet-tdt-0.6b-v3 \\
+  --model "$PRETRAINED_MODEL" \\
   --manifest "$TEST_MANIFEST" \\
   --out results/baseline_cv25_lt_test \\
   $BASELINE_EVAL_CAP
@@ -216,18 +241,32 @@ echo "▶ Step 2: baseline eval (pretrained parakeet-tdt-0.6b-v3)"
 echo "▶ Step 3: fine-tune"
 "$PY" scripts/05_finetune.py \\
   --config configs/finetune_lt.yaml \\
-  --model nvidia/parakeet-tdt-0.6b-v3 \\
+  --model "$PRETRAINED_MODEL" \\
   --out-dir checkpoints/lt-ft \\
   --train-manifest "$TRAIN_MANIFEST" \\
   --val-manifest "$VAL_MANIFEST" \\
   $TRAIN_ARGS
 
-echo "▶ Step 4: post-training eval"
+echo "▶ Step 4: post-training greedy eval"
 "$PY" scripts/04_eval.py \\
   --model checkpoints/lt-ft/finetuned.nemo \\
   --manifest "$TEST_MANIFEST" \\
   --out results/finetuned_cv25_lt_test \\
   $POST_EVAL_CAP
+
+# Step 5: beam+LM eval (if token LM available)
+LM_FILE="/opt/ftparakeet/data/lm/lt_token_4gram.arpa"
+if [ -f "\$LM_FILE" ]; then
+  echo "▶ Step 5: beam+LM eval (alpha=0.5)"
+  "$PY" scripts/11_eval_beam_lm.py \\
+    --model checkpoints/lt-ft/finetuned.nemo \\
+    --manifest "$TEST_MANIFEST" \\
+    --lm "\$LM_FILE" \\
+    --beam-size 8 --alpha 0.5 \\
+    --out results/finetuned_beamlm_cv25_lt_test
+else
+  echo "▶ Step 5: SKIP beam+LM (no token LM at \$LM_FILE)"
+fi
 EOF
 chmod +x "$PIPELINE_SH"
 
