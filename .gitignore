@@ -38,6 +38,13 @@ results/*/per_clip.jsonl
 nohup.out
 /tmp/
 
+# KenLM build (cloned + compiled by 12_build_lm_from_hf.sh)
+tools/
+
+# LM build temps
+data/lm/hf-corpora/
+data/lm/tmp/
+
 # OS / editor
 .DS_Store
 .vscode/
