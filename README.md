@@ -28,7 +28,7 @@ finetuneparakeet/
 
 ## Running a job on GCP
 
-We run everything on a 1×L4 spot VM in `safecare-maps / us-central1-a`.
+We ran everything on a 1×L4 spot VM in `safecare-maps / us-central1-a`.
 The launch script tar-balls the project, uploads it to GCS, and creates
 the VM. The VM boots, installs NeMo on top of the DLVM PyTorch image,
 pulls the tarball, runs the pipeline end-to-end (manifest prep →
