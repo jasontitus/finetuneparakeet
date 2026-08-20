@@ -33,11 +33,11 @@ model-index:
         language: lt
     metrics:
     - type: wer
-      value: 9.01
-      name: WER (beam + domain 5-gram LM α=0.5, BasicTextNormalizer)
+      value: 9.40
+      name: WER (beam + europarl+wiki+subs 5-gram α=0.5)
     - type: wer
-      value: 9.51
-      name: WER (beam + domain 5-gram LM α=0.5)
+      value: 9.40
+      name: WER (beam + europarl+wiki+subs 5-gram α=0.5)
     - type: cer
       value: 2.15
       name: CER (beam + domain 5-gram LM α=0.5)
@@ -59,8 +59,8 @@ model-index:
         language: lt
     metrics:
     - type: wer
-      value: 15.87
-      name: WER (beam + domain 5-gram LM α=0.5, BasicTextNormalizer)
+      value: 15.22
+      name: WER (beam + europarl+wiki+subs 5-gram α=0.5)
     - type: wer
       value: 19.21
       name: WER (greedy)
@@ -71,7 +71,7 @@ model-index:
 
 # parakeet-tdt-lt — Lithuanian fine-tune of NVIDIA Parakeet TDT 0.6B v3
 
-Fine-tuned version of [`nvidia/parakeet-tdt-0.6b-v3`](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) on ~43 hours of Lithuanian speech data. Achieves a **45.5% relative WER reduction** on Common Voice 25 Lithuanian test (16.53% → **9.01%** with beam search + domain 5-gram language model, BasicTextNormalizer).
+Fine-tuned version of [`nvidia/parakeet-tdt-0.6b-v3`](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) on ~43 hours of Lithuanian speech data. Achieves a **45.5% relative WER reduction** on Common Voice 25 Lithuanian test (16.53% → **8.91%** with beam search + domain 5-gram language model, BasicTextNormalizer).
 
 ## Results
 
@@ -79,8 +79,8 @@ Fine-tuned version of [`nvidia/parakeet-tdt-0.6b-v3`](https://huggingface.co/nvi
 |---|---|---|---|
 | Baseline (pretrained, greedy) | 16.53% | 4.29% | 22.15%* |
 | Fine-tuned epoch 11 (greedy) | 13.55% | 2.76% | — |
-| Fine-tuned + beam + domain 5-gram LM α=0.5 | **9.51%** | **2.15%** | — |
-| Same, BasicTextNormalizer (leaderboard) | **9.01%** | **2.07%** | **15.87%** |
+| Fine-tuned + beam + domain 5-gram LM α=0.5 | **9.40%** | **2.15%** | — |
+| Same, BasicTextNormalizer (leaderboard) | **8.91%** | **2.07%** | **15.87%** |
 
 \* BasicTextNormalizer. Live results: [speechbench-viz.web.app](https://speechbench-viz.web.app)
 
@@ -118,6 +118,36 @@ model.change_decoding_strategy(decoding_cfg)
 transcriptions = model.transcribe(["audio.wav"])
 ```
 
+### Long recordings (important)
+
+The examples above pass a whole file to `model.transcribe()`. That is fine for
+clips, but **on long recordings this model silently drops large spans of speech**
+rather than failing loudly. It was fine-tuned and evaluated on Common Voice
+utterances of a few seconds; an hour-long file is far outside that regime.
+
+Measured on a 7m41s interview segment containing only 24s of silence:
+
+| decoding | words returned |
+|---|---|
+| whole file, beam + LM | 168 |
+| same audio in silence-aligned chunks, greedy | **793** |
+
+Split long audio on silence before decoding. `transcribe.py` in this repo does
+it for you — anything over 90s is chunked automatically:
+
+```bash
+python transcribe.py interview.mp3              # chunks automatically
+python transcribe.py --lm interview.mp3         # with LM fusion
+python transcribe.py --json interview.mp3       # adds per-segment start/end
+python transcribe.py --chunk-seconds 30 hard_audio.mp3
+python transcribe.py --no-chunk clip.wav        # opt out
+```
+
+It needs `ffmpeg` on PATH for chunking. With `--json`, each record carries
+`duration` and a `segments` list of `{start, end, text}`, giving you rough
+timings at no extra cost.
+
+
 ## Training details
 
 - **Base model**: nvidia/parakeet-tdt-0.6b-v3 (multilingual European, 25 languages)
@@ -142,8 +172,10 @@ bash scripts/gcp_eval.sh  # on a GCP VM with GPU
 ## Files
 
 - `parakeet-tdt-lt.nemo` — NeMo checkpoint (epoch 11, best WER)
-- `lt_domain_5gram.arpa` — Domain 5-gram token LM (Wikipedia + training manifests, recommended)
+- `lt_europarl_wiki_subs_5gram.arpa` — Europarl+wiki+subs 5-gram token LM (recommended)
 - `lt_token_4gram.arpa` — Original 4-gram token LM (smaller, still good)
+- `transcribe.py` — standalone runner: downloads the model, handles device
+  placement and LM fusion, and chunks long audio on silence
 
 ## License
 
