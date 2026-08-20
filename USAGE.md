@@ -121,6 +121,23 @@ python transcribe.py audio.wav                       # single file
 python transcribe.py clip1.wav clip2.wav clip3.wav  # multiple files
 python transcribe.py --lm audio.wav                  # with LM (slower, +2.8pp accuracy)
 python transcribe.py --model /path/to/local.nemo --lm audio.wav  # local model
+python transcribe.py --chunk-seconds 30 interview.mp3   # tune long-audio chunking
+python transcribe.py --no-chunk clip.wav                # disable chunking
+```
+
+### Long recordings
+
+Anything over 90s is split on detected silence before decoding, and the pieces
+are stitched back together. This matters: the model was trained and evaluated on
+Common Voice clips of a few seconds, and handing it an hour-long file makes it
+silently drop large spans rather than fail loudly. On a 7m41s interview segment
+with only 24s of silence, whole-file decoding returned 168 words; the same audio
+chunked returned 793.
+
+With `--json` each record also carries `duration` and a `segments` list of
+`{start, end, text}`, so you get rough timings for free.
+
+```bash
 ```
 
 See `scripts/transcribe.py`.
